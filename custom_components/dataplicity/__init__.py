@@ -16,15 +16,17 @@ async def async_setup(hass: HomeAssistant, hass_config: dict):
     real_install = package.install_package
 
     def fake_install(pkg: str, *args, **kwargs):
-        if pkg == "dataplicity==0.4.40":
+        if pkg == "dataplicity==0.5.13":
             return utils.install_package(pkg, *args, **kwargs)
         return real_install(pkg, *args, **kwargs)
 
     try:
         package.install_package = fake_install
 
-        # latest dataplicity has bug with redirect_port
-        await async_process_requirements(hass, DOMAIN, ["dataplicity==0.4.40"])
+        # 0.4.40 talks to the legacy api.dataplicity.com and is rejected with
+        # HTTP 403 for devices provisioned via the new device-gateway API;
+        # 0.5.13 works with the new provisioning.
+        await async_process_requirements(hass, DOMAIN, ["dataplicity==0.5.13"])
 
         # fix Python 3.11 support
         if not hasattr(inspect, "getargspec"):

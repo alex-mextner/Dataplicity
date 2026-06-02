@@ -144,14 +144,22 @@ def install_package(
 
 def import_client():
     # fix: type object 'array.array' has no attribute 'tostring'
-    from dataplicity import iptool
-
-    iptool.get_all_interfaces = lambda: [("lo", "127.0.0.1")]
+    # iptool/device_meta were dropped in newer dataplicity releases, so the
+    # monkey-patches are best-effort (skipped when the module is gone).
+    try:
+        from dataplicity import iptool
+    except ImportError:
+        pass
+    else:
+        iptool.get_all_interfaces = lambda: [("lo", "127.0.0.1")]
 
     # fix: module 'platform' has no attribute 'linux_distribution'
-    from dataplicity import device_meta
-
-    device_meta.get_os_version = lambda: "Linux"
+    try:
+        from dataplicity import device_meta
+    except ImportError:
+        pass
+    else:
+        device_meta.get_os_version = lambda: "Linux"
 
     from dataplicity.client import Client
 
